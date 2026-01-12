@@ -41,15 +41,19 @@ pipeline {
         stage('SAST - SonarQube') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh '''
-                      sonar-scanner \
-                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.sources=backend,frontend/src \
-                        -Dsonar.exclusions=**/node_modules/**,**/dist/**
-                    '''
+                    script {
+                        def scannerHome = tool 'SonarScanner'
+                        sh """
+                          ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.sources=backend,frontend/src \
+                            -Dsonar.exclusions=**/node_modules/**,**/dist/**
+                        """
+                    }
                 }
             }
         }
+	
 
         stage('Quality Gate') {
             steps {
