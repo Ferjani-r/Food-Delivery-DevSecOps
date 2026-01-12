@@ -1,13 +1,14 @@
 pipeline {
-    agent any
-
-    tools {
-        nodejs 'NodeJS-18'
+    agent {
+        docker {
+            image 'node:18-alpine'
+            args '-u root:root'
+        }
     }
 
     environment {
         SONAR_PROJECT_KEY = 'food-delivery'
-        SONAR_HOST_URL   = 'http://172.16.14.10:9000'
+        SONAR_HOST_URL    = 'http://sonarqube:9000'
     }
 
     stages {
@@ -60,7 +61,7 @@ pipeline {
     }
 
     post {
-        always {
+        cleanup {
             cleanWs()
         }
     }
