@@ -1,14 +1,8 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18-alpine'
-            args '-u root:root'
-        }
-    }
+    agent any
 
     environment {
         SONAR_PROJECT_KEY = 'food-delivery'
-        SONAR_HOST_URL    = 'http://sonarqube:9000'
     }
 
     stages {
@@ -38,11 +32,11 @@ pipeline {
             }
         }
 
-        stage('SAST - SonarQube') {
+        stage('SAST - SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    script {
-                        def scannerHome = tool 'SonarScanner'
+                script {
+                    def scannerHome = tool 'SonarScanner'
+                    withSonarQubeEnv('SonarQube') {
                         sh """
                           ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
@@ -53,7 +47,6 @@ pipeline {
                 }
             }
         }
-	
 
         stage('Quality Gate') {
             steps {
@@ -65,7 +58,7 @@ pipeline {
     }
 
     post {
-        cleanup {
+        always {
             cleanWs()
         }
     }
