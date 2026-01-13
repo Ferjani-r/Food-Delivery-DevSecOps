@@ -74,7 +74,6 @@ pipeline {
                                 -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                                 -Dsonar.sources=backend,frontend/src \
                                 -Dsonar.exclusions=**/node_modules/**,**/dist/** \
-                                -Dsonar.login=${SONAR_TOKEN}
                             """
                         }
                     }
