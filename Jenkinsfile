@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     environment {
         SONAR_PROJECT_KEY = 'food-delivery'
     }
@@ -17,12 +21,11 @@ pipeline {
                         credentialsId: 'github-ssh'
                     ]],
                     extensions: [
-                        [$class: 'CloneOption', shallow: true, depth: 1, noTags: false]
+                        [$class: 'CloneOption', shallow: true, depth: 1]
                     ]
                 ])
             }
         }
-
 
         stage('Install Dependencies') {
             parallel {
