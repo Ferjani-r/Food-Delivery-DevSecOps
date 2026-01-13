@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18-alpine'
+            args '-u root:root'
+        }
+    }
 
     options {
         skipDefaultCheckout(true)
@@ -20,9 +25,11 @@ pipeline {
                         url: 'git@github.com:Ferjani-r/Food-Delivery-DevSecOps.git',
                         credentialsId: 'github-ssh'
                     ]],
-                    extensions: [
-                        [$class: 'CloneOption', shallow: true, depth: 1]
-                    ]
+                    extensions: [[
+                        $class: 'CloneOption',
+                        shallow: true,
+                        depth: 1
+                    ]]
                 ])
             }
         }
