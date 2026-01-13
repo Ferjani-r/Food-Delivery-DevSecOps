@@ -9,9 +9,20 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                checkout scm
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'git@github.com:Ferjani-r/Food-Delivery-DevSecOps.git',
+                        credentialsId: 'github-ssh'
+                    ]],
+                    extensions: [
+                        [$class: 'CloneOption', shallow: true, depth: 1, noTags: false]
+                    ]
+                ])
             }
         }
+
 
         stage('Install Dependencies') {
             parallel {
