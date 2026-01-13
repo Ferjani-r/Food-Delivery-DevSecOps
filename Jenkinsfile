@@ -16,6 +16,16 @@ pipeline {
 
     stages {
 
+        stage('Prepare Tools') {
+            steps {
+                sh '''
+                  apk update
+                  apk add --no-cache openjdk17-jre
+                  java -version
+                '''
+            }
+        }
+
         stage('Checkout') {
             steps {
                 checkout([
