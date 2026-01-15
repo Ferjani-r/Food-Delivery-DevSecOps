@@ -1,7 +1,8 @@
 pipeline {
   agent {
     docker {
-      image 'sonarsource/sonar-scanner-cli:latest'
+      image 'docker:27-cli'
+      args '-v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
 
@@ -20,8 +21,8 @@ pipeline {
     stage('Install Dependencies') {
       steps {
         sh '''
-          cd backend && npm ci
-          cd ../frontend && npm ci
+          docker run --rm -v $(pwd)/backend:/app -w /app node:18-alpine npm ci
+          docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm ci
         '''
       }
     }
@@ -48,8 +49,8 @@ pipeline {
     stage('Tests & Coverage') {
       steps {
         sh '''
-          cd backend && npm test -- --coverage
-          cd ../frontend && npm test -- --coverage
+          docker run --rm -v $(pwd)/backend:/app -w /app node:18-alpine npm test -- --coverage
+          docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm test -- --coverage
         '''
       }
     }
@@ -66,8 +67,8 @@ pipeline {
     stage('Image Scan - Trivy') {
       steps {
         sh '''
-          trivy image --severity HIGH,CRITICAL food-backend
-          trivy image --severity HIGH,CRITICAL food-frontend
+          docker run --rm aquasec/trivy image --severity HIGH,CRITICAL food-backend
+          docker run --rm aquasec/trivy image --severity HIGH,CRITICAL food-frontend
         '''
       }
     }
@@ -82,11 +83,11 @@ pipeline {
       steps {
         sh '''
           docker run --rm --network host \
-          -v $(pwd):/zap/wrk \
-          zaproxy/zap-stable zap-baseline.py \
-          -t http://localhost:80 \
-          -c zap-rules.conf \
-          -r zap-report.html
+            -v $(pwd):/zap/wrk \
+            zaproxy/zap-stable zap-baseline.py \
+            -t http://localhost:80 \
+            -c zap-rules.conf \
+            -r zap-report.html
         '''
       }
     }
