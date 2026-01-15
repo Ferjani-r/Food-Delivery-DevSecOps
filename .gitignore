@@ -1,1 +1,18 @@
+# Dependencies
+node_modules/
+
+# Environment
 .env
+backend/.env.test
+
+# Reports / artifacts
+reports/
+audit-report.json
+trivy-*.json
+zap-*.json
+zap-*.html
+coverage/
+dist/
+
+# OS
+.DS_Store

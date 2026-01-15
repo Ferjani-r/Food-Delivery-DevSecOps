@@ -72,11 +72,38 @@ services:
       - food-network
 
 
+  # ---------------- Prometheus ----------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: food-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert-rules.yml:/etc/prometheus/alert-rules.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    networks:
+      - food-network
+
+  # ---------------- Grafana ----------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: food-grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - food-network
+
+
 # ---------------- Volumes ----------------
 volumes:
   mongodb_data:
   sonarqube_data:
   sonarqube_logs:
+  grafana_data:
 
 # ---------------- Network ----------------
 networks:
