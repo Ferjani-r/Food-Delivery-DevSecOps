@@ -1,8 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'node:18-alpine'
-      args '-v /var/run/docker.sock:/var/run/docker.sock'
+      image 'sonarsource/sonar-scanner-cli:latest'
     }
   }
 
@@ -28,19 +27,17 @@ pipeline {
     }
 
     stage('SAST - SonarQube') {
-      agent {
-        docker {
-          image 'sonarsource/sonar-scanner-cli:latest'
-          args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-      }
       steps {
         withSonarQubeEnv('SonarQube') {
-          sh 'sonar-scanner'
+          sh '''
+            docker run --rm \
+              -v $(pwd):/usr/src \
+              -w /usr/src \
+              sonarsource/sonar-scanner-cli:latest
+          '''
         }
       }
     }
-
 
     stage('Dependency Audit') {
       steps {
