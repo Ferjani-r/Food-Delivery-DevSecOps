@@ -28,12 +28,19 @@ pipeline {
     }
 
     stage('SAST - SonarQube') {
+      agent {
+        docker {
+          image 'sonarsource/sonar-scanner-cli:latest'
+          args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+      }
       steps {
         withSonarQubeEnv('SonarQube') {
           sh 'sonar-scanner'
         }
       }
     }
+
 
     stage('Dependency Audit') {
       steps {
