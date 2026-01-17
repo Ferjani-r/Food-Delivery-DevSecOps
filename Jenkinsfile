@@ -62,12 +62,13 @@ pipeline {
 
     stage('Dependency Audit') {
       steps {
+        // Fix: Install jq and create reports folder before running script
         sh """
           docker run --rm \
             --volumes-from ${JENKINS_CONTAINER} \
             -w ${WORKSPACE_PATH} \
             node:18-alpine \
-            sh ./scripts/security-audit.sh
+            sh -c "apk add --no-cache jq && mkdir -p reports && sh ./scripts/security-audit.sh"
         """
       }
     }
@@ -90,8 +91,6 @@ pipeline {
 
     stage('Build Docker Images') {
       steps {
-        // Docker build works differently; it sends the context to the daemon. 
-        // Since we are in the workspace, standard build works fine.
         sh '''
           docker build -t food-backend ./backend
           docker build -t food-frontend ./frontend
@@ -119,7 +118,6 @@ pipeline {
 
     stage('DAST - OWASP ZAP') {
       steps {
-        // ZAP also needs the workspace for reports
         sh """
           docker run --rm --network host \
             --volumes-from ${JENKINS_CONTAINER} \
