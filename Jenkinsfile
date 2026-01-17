@@ -21,8 +21,15 @@ pipeline {
     stage('Install Dependencies') {
       steps {
         sh '''
-          docker run --rm -v $(pwd)/backend:/app -w /app node:18-alpine npm install
-          docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm install
+          docker run --rm \
+            --volumes-from $(docker ps -qf "name=jenkins") \
+            -w /var/jenkins_home/workspace/food-delivery-devsecops/backend \
+            node:18-alpine npm install
+
+          docker run --rm \
+            --volumes-from $(docker ps -qf "name=jenkins") \
+            -w /var/jenkins_home/workspace/food-delivery-devsecops/frontend \
+            node:18-alpine npm install
         '''
       }
     }
