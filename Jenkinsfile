@@ -117,10 +117,13 @@ pipeline {
     stage('Deploy') {
       steps {
         sh '''
-          # Stop and remove old containers to avoid name conflicts
-          docker compose down || true
+          # 1. Force remove containers by name to handle orphans/conflicts
+          docker rm -f food-backend food-frontend food-mongodb food-sonarqube food-prometheus food-grafana || true
           
-          # Start the new deployment
+          # 2. Clean up networks and volumes associated with the compose project
+          docker compose down --volumes || true
+          
+          # 3. Start the fresh deployment
           docker compose up -d
         '''
       }
