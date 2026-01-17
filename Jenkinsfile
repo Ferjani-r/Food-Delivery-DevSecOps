@@ -115,15 +115,23 @@ pipeline {
     }
 
     stage('Deploy') {
+      environment {
+        // 🔒 SECURE: Inject secrets from Jenkins Credentials Store
+        // The values are masked in logs as ****
+        MONGO_USER = credentials('mongo-user')
+        MONGO_PASSWORD = credentials('mongo-password')
+        JWT_SECRET = credentials('jwt-secret')
+      }
       steps {
         sh '''
           # 1. Force remove containers by name to handle orphans/conflicts
           docker rm -f food-backend food-frontend food-mongodb food-sonarqube food-prometheus food-grafana || true
           
-          # 2. Clean up networks and volumes associated with the compose project
+          # 2. Clean up networks associated with the compose project
           docker compose down || true
           
           # 3. Start the fresh deployment
+          # Docker Compose will automatically read the MONGO_USER, etc., from the environment variables set above
           docker compose up -d
         '''
       }
