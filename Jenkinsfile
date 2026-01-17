@@ -21,8 +21,8 @@ pipeline {
     stage('Install Dependencies') {
       steps {
         sh '''
-          docker run --rm -v $(pwd)/backend:/app -w /app node:18-alpine npm ci
-          docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm ci
+          docker run --rm -v $(pwd)/backend:/app -w /app node:18-alpine npm install
+          docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm install
         '''
       }
     }
