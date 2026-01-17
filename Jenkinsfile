@@ -41,7 +41,13 @@ pipeline {
             docker run --rm \
               -v $(pwd):/usr/src \
               -w /usr/src \
-              sonarsource/sonar-scanner-cli:latest
+              sonarsource/sonar-scanner-cli:latest \
+              -Dsonar.projectKey=food-delivery \
+              -Dsonar.projectName="Food Delivery App" \
+              -Dsonar.projectVersion=1.0 \
+              -Dsonar.sources=backend,frontend/src \
+              -Dsonar.tests=backend/__tests__,frontend/src/__tests__ \
+              -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info,frontend/coverage/lcov.info
           '''
         }
       }
