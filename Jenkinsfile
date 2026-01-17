@@ -41,7 +41,7 @@ pipeline {
             docker run --rm \
               -e SONAR_HOST_URL=$SONAR_HOST_URL \
               -e SONAR_TOKEN=$SONAR_AUTH_TOKEN \
-              -v $(pwd):/usr/src \
+              -v /var/jenkins_home/workspace/food-delivery-devsecops:/usr/src \
               -w /usr/src \
               sonarsource/sonar-scanner-cli:latest \
               -Dsonar.host.url=$SONAR_HOST_URL \
@@ -49,8 +49,8 @@ pipeline {
               -Dsonar.projectKey=food-delivery \
               -Dsonar.projectName="Food Delivery App" \
               -Dsonar.projectVersion=1.0 \
-              -Dsonar.sources=backend,frontend \
-              -Dsonar.exclusions=**/node_modules/**,**/dist/**
+              -Dsonar.sources=. \
+              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**
           '''
         }
       }
