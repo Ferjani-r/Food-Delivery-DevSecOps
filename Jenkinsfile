@@ -8,6 +8,9 @@ pipeline {
 
   environment {
     DOCKER_BUILDKIT = "1"
+    // Helper to get the Jenkins container ID dynamically
+    JENKINS_CONTAINER = sh(script: 'docker ps -qf "name=jenkins"', returnStdout: true).trim()
+    WORKSPACE_PATH = "/var/jenkins_home/workspace/food-delivery-devsecops" 
   }
 
   stages {
@@ -20,65 +23,74 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        sh '''
+        sh """
           docker run --rm \
-            --volumes-from $(docker ps -qf "name=jenkins") \
-            -w /var/jenkins_home/workspace/food-delivery-devsecops/backend \
+            --volumes-from ${JENKINS_CONTAINER} \
+            -w ${WORKSPACE_PATH}/backend \
             node:18-alpine npm install
 
           docker run --rm \
-            --volumes-from $(docker ps -qf "name=jenkins") \
-            -w /var/jenkins_home/workspace/food-delivery-devsecops/frontend \
+            --volumes-from ${JENKINS_CONTAINER} \
+            -w ${WORKSPACE_PATH}/frontend \
             node:18-alpine npm install
-        '''
+        """
       }
     }
 
     stage('SAST - SonarQube') {
       steps {
         withSonarQubeEnv('SonarQube') {
-          sh '''
+          sh """
             docker run --rm \
-              -e SONAR_HOST_URL=$SONAR_HOST_URL \
-              -e SONAR_TOKEN=$SONAR_AUTH_TOKEN \
-              -v /var/jenkins_home/workspace/food-delivery-devsecops:/usr/src \
-              -w /usr/src \
+              -e SONAR_HOST_URL=\$SONAR_HOST_URL \
+              -e SONAR_TOKEN=\$SONAR_AUTH_TOKEN \
+              --volumes-from ${JENKINS_CONTAINER} \
+              -w ${WORKSPACE_PATH} \
               sonarsource/sonar-scanner-cli:latest \
-              -Dsonar.host.url=$SONAR_HOST_URL \
-              -Dsonar.login=$SONAR_TOKEN \
+              -Dsonar.host.url=\$SONAR_HOST_URL \
+              -Dsonar.login=\$SONAR_TOKEN \
               -Dsonar.projectKey=food-delivery \
               -Dsonar.projectName="Food Delivery App" \
               -Dsonar.projectVersion=1.0 \
               -Dsonar.sources=. \
               -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**
-          '''
+          """
         }
       }
     }
 
     stage('Dependency Audit') {
       steps {
-        sh '''
+        sh """
           docker run --rm \
-            -v $(pwd):/app \
-            -w /app \
+            --volumes-from ${JENKINS_CONTAINER} \
+            -w ${WORKSPACE_PATH} \
             node:18-alpine \
-            sh -c "ls -la scripts/ && sh ./scripts/security-audit.sh"
-        '''
+            sh ./scripts/security-audit.sh
+        """
       }
     }
 
     stage('Tests & Coverage') {
       steps {
-        sh '''
-          docker run --rm -v $(pwd)/backend:/app -w /app node:18-alpine npm test -- --coverage
-          docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm test -- --coverage
-        '''
+        sh """
+          docker run --rm \
+            --volumes-from ${JENKINS_CONTAINER} \
+            -w ${WORKSPACE_PATH}/backend \
+            node:18-alpine npm test -- --coverage
+          
+          docker run --rm \
+            --volumes-from ${JENKINS_CONTAINER} \
+            -w ${WORKSPACE_PATH}/frontend \
+            node:18-alpine npm test -- --coverage
+        """
       }
     }
 
     stage('Build Docker Images') {
       steps {
+        // Docker build works differently; it sends the context to the daemon. 
+        // Since we are in the workspace, standard build works fine.
         sh '''
           docker build -t food-backend ./backend
           docker build -t food-frontend ./frontend
@@ -89,8 +101,11 @@ pipeline {
     stage('Image Scan - Trivy') {
       steps {
         sh '''
-          docker run --rm aquasec/trivy image --severity HIGH,CRITICAL food-backend
-          docker run --rm aquasec/trivy image --severity HIGH,CRITICAL food-frontend
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy image --severity HIGH,CRITICAL food-backend
+          
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy image --severity HIGH,CRITICAL food-frontend
         '''
       }
     }
@@ -103,14 +118,16 @@ pipeline {
 
     stage('DAST - OWASP ZAP') {
       steps {
-        sh '''
+        // ZAP also needs the workspace for reports
+        sh """
           docker run --rm --network host \
-            -v $(pwd):/zap/wrk \
+            --volumes-from ${JENKINS_CONTAINER} \
+            -w ${WORKSPACE_PATH} \
             zaproxy/zap-stable zap-baseline.py \
             -t http://localhost:80 \
             -c zap-rules.conf \
             -r zap-report.html
-        '''
+        """
       }
     }
   }
