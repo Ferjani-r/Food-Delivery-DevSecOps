@@ -63,7 +63,7 @@ pipeline {
             -v $(pwd):/app \
             -w /app \
             node:18-alpine \
-            sh ./scripts/security-audit.sh
+            sh -c "ls -la scripts/ && sh ./scripts/security-audit.sh"
         '''
       }
     }
