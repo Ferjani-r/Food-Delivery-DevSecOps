@@ -53,7 +53,8 @@ pipeline {
               -Dsonar.projectName="Food Delivery App" \
               -Dsonar.projectVersion=1.0 \
               -Dsonar.sources=. \
-              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**
+              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/** \
+              -Dsonar.qualitygate.wait=false
           """
         }
       }
