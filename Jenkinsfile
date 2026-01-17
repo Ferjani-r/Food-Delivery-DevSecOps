@@ -140,17 +140,25 @@ pipeline {
     stage('DAST - OWASP ZAP') {
       steps {
         sh """
+          # 1. Create a dummy folder for the scan workspace
+          mkdir -p zap-work
+          
+          # 2. Run ZAP with a trick:
+          #    - We mount a temporary docker volume to /zap/wrk to satisfy ZAP's check
+          #    - We run as root (-u root) to copy files in/out
+          #    - We use --entrypoint sh to execute multiple commands (copy config -> scan -> copy report)
           docker run --rm --network host \
+            -u root \
+            -v zap-work:/zap/wrk \
             --volumes-from ${JENKINS_CONTAINER} \
-            -w ${WORKSPACE_PATH} \
-            zaproxy/zap-stable zap-baseline.py \
-            -t http://localhost:80 \
-            -c zap-rules.conf \
-            -r zap-report.html
+            --entrypoint sh \
+            zaproxy/zap-stable \
+            -c "cp ${WORKSPACE_PATH}/zap-rules.conf /zap/wrk/ && \
+                zap-baseline.py -t http://localhost:80 -c zap-rules.conf -r zap-report.html && \
+                cp /zap/wrk/zap-report.html ${WORKSPACE_PATH}/"
         """
       }
     }
-  }
 
   post {
     success {
