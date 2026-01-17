@@ -6,14 +6,14 @@ echo "🔍 Starting Security Audit..."
 # Backend audit
 echo "📦 Auditing Backend dependencies..."
 cd backend
-npm audit --json > ../reports/npm-audit-backend.json 2>&1 || true
+npm audit --json --loglevel=silent > ../reports/npm-audit-backend.json || true
 BACKEND_VULNS=$(cat ../reports/npm-audit-backend.json | jq '.metadata.vulnerabilities.high + .metadata.vulnerabilities.critical')
 cd ..
 
 # Frontend audit
 echo "📦 Auditing Frontend dependencies..."
 cd frontend
-npm audit --json > ../reports/npm-audit-frontend.json 2>&1 || true
+npm audit --json --loglevel=silent > ../reports/npm-audit-frontend.json || true
 FRONTEND_VULNS=$(cat ../reports/npm-audit-frontend.json | jq '.metadata.vulnerabilities.high + .metadata.vulnerabilities.critical')
 cd ..
 
