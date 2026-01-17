@@ -49,7 +49,7 @@ pipeline {
               -Dsonar.projectKey=food-delivery \
               -Dsonar.projectName="Food Delivery App" \
               -Dsonar.projectVersion=1.0 \
-              -Dsonar.sources=backend,frontend/src \
+              -Dsonar.sources=backend,frontend \
               -Dsonar.exclusions=**/node_modules/**,**/dist/**
           '''
         }
