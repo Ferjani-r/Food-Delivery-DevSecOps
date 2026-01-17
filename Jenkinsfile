@@ -58,7 +58,10 @@ pipeline {
 
     stage('Dependency Audit') {
       steps {
-        sh './scripts/security-audit.sh'
+        sh '''
+          cd /var/jenkins_home/workspace/food-delivery-devsecops
+          ./scripts/security-audit.sh
+        '''
       }
     }
 
