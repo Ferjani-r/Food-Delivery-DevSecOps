@@ -50,8 +50,7 @@ pipeline {
               -Dsonar.projectName="Food Delivery App" \
               -Dsonar.projectVersion=1.0 \
               -Dsonar.sources=backend,frontend/src \
-              -Dsonar.tests=backend/__tests__,frontend/src/__tests__ \
-              -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info,frontend/coverage/lcov.info
+              -Dsonar.exclusions=**/node_modules/**,**/dist/**
           '''
         }
       }
