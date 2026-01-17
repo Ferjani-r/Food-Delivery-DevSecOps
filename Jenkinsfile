@@ -39,9 +39,13 @@ pipeline {
         withSonarQubeEnv('SonarQube') {
           sh '''
             docker run --rm \
+              -e SONAR_HOST_URL=$SONAR_HOST_URL \
+              -e SONAR_TOKEN=$SONAR_AUTH_TOKEN \
               -v $(pwd):/usr/src \
               -w /usr/src \
               sonarsource/sonar-scanner-cli:latest \
+              -Dsonar.host.url=$SONAR_HOST_URL \
+              -Dsonar.login=$SONAR_TOKEN \
               -Dsonar.projectKey=food-delivery \
               -Dsonar.projectName="Food Delivery App" \
               -Dsonar.projectVersion=1.0 \
