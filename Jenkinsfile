@@ -116,7 +116,13 @@ pipeline {
 
     stage('Deploy') {
       steps {
-        sh 'docker compose up -d'
+        sh '''
+          # Stop and remove old containers to avoid name conflicts
+          docker compose down || true
+          
+          # Start the new deployment
+          docker compose up -d
+        '''
       }
     }
 
