@@ -121,7 +121,7 @@ pipeline {
           docker rm -f food-backend food-frontend food-mongodb food-sonarqube food-prometheus food-grafana || true
           
           # 2. Clean up networks and volumes associated with the compose project
-          docker compose down --volumes || true
+          docker compose down || true
           
           # 3. Start the fresh deployment
           docker compose up -d
